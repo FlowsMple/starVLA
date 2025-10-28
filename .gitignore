@@ -8,7 +8,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+processed_data/
 # Distribution / packaging
 .Python
 build/

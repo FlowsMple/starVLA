@@ -52,6 +52,8 @@ DATASET_NAMED_MIXTURES = {
         ("custom_dataset_name_1", 1.0, "custom_robot_config"),
         ("custom_dataset_name_2", 1.0, "custom_robot_config"),
     ],
-
+    "robotwin_place_shoe": [
+        ("place_shoe-ee-150", 1.0, "demo_sim_dual_franka_eef"),
+    ],
 
 }

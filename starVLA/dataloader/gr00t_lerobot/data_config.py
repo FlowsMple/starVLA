@@ -589,6 +589,89 @@ class SingleFrankaRobotiqDeltaJointsDataConfig:
 
         return ComposedModalityTransform(transforms=transforms)
 
+class DualFrankaRobotiqEefDataConfig:
+    video_keys = [
+        "video.cam_high",
+        "video.cam_left_wrist",
+        "video.cam_right_wrist"
+    ]
+    state_keys = [
+        "state.left_eef_xyz",
+        "state.left_eef_quaternion",
+        "state.left_gripper",
+        "state.right_eef_xyz",
+        "state.right_eef_quaternion",
+        "state.right_gripper",
+    ]
+    action_keys = [
+        "action.left_eef_xyz",
+        "action.left_eef_quaternion",
+        "action.left_gripper",
+        "action.right_eef_xyz",
+        "action.right_eef_quaternion",
+        "action.right_gripper",
+    ]
+
+    language_keys = ["annotation.human.action.task_description"]
+    observation_indices = [0]
+    action_indices = list(range(16))
+
+    def modality_config(self):
+        video_modality = ModalityConfig(
+            delta_indices=self.observation_indices,
+            modality_keys=self.video_keys,
+        )
+        state_modality = ModalityConfig(
+            delta_indices=self.observation_indices,
+            modality_keys=self.state_keys,
+        )
+        action_modality = ModalityConfig(
+            delta_indices=self.action_indices,
+            modality_keys=self.action_keys,
+        )
+        language_modality = ModalityConfig(
+            delta_indices=self.observation_indices,
+            modality_keys=self.language_keys,
+        )
+        modality_configs = {
+            "video": video_modality,
+            "state": state_modality,
+            "action": action_modality,
+            "language": language_modality,
+        }
+        return modality_configs
+
+    def transform(self):
+        transforms = [
+            StateActionToTensor(apply_to=self.state_keys),
+            StateActionTransform(
+                apply_to=self.state_keys,
+                normalization_modes={
+                    "state.left_eef_xyz": "q99",
+                    "state.left_eef_quaternion": "q99",
+                    "state.left_gripper": "q99",
+                    "state.right_eef_xyz": "q99",
+                    "state.right_eef_quaternion": "q99",
+                    "state.right_gripper": "q99",
+                },
+            ),
+            # action transforms
+            StateActionToTensor(apply_to=self.action_keys),
+            StateActionTransform(
+                apply_to=self.action_keys,
+                normalization_modes={
+                    "action.left_eef_xyz": "q99",
+                    "action.left_eef_quaternion": "q99",
+                    "action.left_gripper": "q99",
+                    "action.right_eef_xyz": "q99",
+                    "action.right_eef_quaternion": "q99",
+                    "action.right_gripper": "q99",
+                },
+            ),
+        ]
+
+
+        return ComposedModalityTransform(transforms=transforms)
 
 ###########################################################################################
 
@@ -600,5 +683,6 @@ ROBOT_TYPE_CONFIG_MAP = {
     "oxe_bridge": OxeBridgeDataConfig(),
     "oxe_rt1": OxeRT1DataConfig(),
     "demo_sim_franka_delta_joints": SingleFrankaRobotiqDeltaJointsDataConfig(),
+    "demo_sim_dual_franka_eef": DualFrankaRobotiqEefDataConfig(),
     "custom_robot_config": SingleFrankaRobotiqDeltaEefDataConfig()
 }

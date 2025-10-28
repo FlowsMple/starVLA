@@ -167,7 +167,7 @@ class FlowmatchingActionHeadConfig(PretrainedConfig):
         default=1536, metadata={"help": "Input embedding channel dimension."}
     )
 
-    hidden_size: int = field(default=1024, metadata={"help": "Input embedding dimension."})
+    hidden_size: int = field(default=2048, metadata={"help": "Input embedding dimension."})
     max_seq_len: int = field(default=1024, metadata={"help": "Maxium Sequence Length"})
     action_dim: int = field(default=None, metadata={"help": "Action dimension."})
     action_horizon: int = field(default=None, metadata={"help": "Action horizon."})

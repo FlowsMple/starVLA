@@ -48,6 +48,9 @@ def build_framework(cfg):
     elif cfg.framework.name == "QwenFast":
         from starVLA.model.framework.QwenFast import Qwenvl_Fast
         return Qwenvl_Fast(cfg)
+    elif cfg.framework.name == "QwenPI":
+        from starVLA.model.framework.QwenPI import Qwen_PI
+        return Qwen_PI(cfg)
 
     
     # auto detect from registry

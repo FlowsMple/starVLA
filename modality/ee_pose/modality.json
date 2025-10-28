@@ -1,0 +1,77 @@
+{
+    "action": {
+        "left_eef_xyz": {
+            "start": 0,
+            "end": 3,
+            "original_key": "action.left_eef_xyz"
+        },
+        "left_eef_quaternion": {
+            "start": 0,
+            "end": 4,
+            "original_key": "action.left_eef_quaternion"
+        },
+        "left_gripper": {
+            "start": 0,
+            "end": 1,
+            "original_key": "action.left_gripper"
+        },
+        "right_eef_xyz": {
+            "start": 0,
+            "end": 3,
+            "original_key": "action.right_eef_xyz"
+        },
+        "right_eef_quaternion": {
+            "start": 0,
+            "end": 4,
+            "original_key": "action.right_eef_quaternion"
+        },
+        "right_gripper": {
+            "start": 0,
+            "end": 1,
+            "original_key": "action.right_gripper"
+        }
+    },
+    "state": {
+        "left_eef_xyz": {
+            "start": 0,
+            "end": 3,
+            "original_key": "state.left_eef_xyz"
+        },
+        "left_eef_quaternion": {
+            "start": 0,
+            "end": 4,
+            "original_key": "state.left_eef_quaternion"
+        },
+        "left_gripper": {
+            "start": 0,
+            "end": 1,
+            "original_key": "state.left_gripper"
+        },
+        "right_eef_xyz": {
+            "start": 0,
+            "end": 3,
+            "original_key": "state.right_eef_xyz"
+        },
+        "right_eef_quaternion": {
+            "start": 0,
+            "end": 4,
+            "original_key": "state.right_eef_quaternion"
+        },
+        "right_gripper": {
+            "start": 0,
+            "end": 1,
+            "original_key": "state.right_gripper"
+        }
+    },
+    "video": {
+        "cam_high": {
+            "original_key": "video.cam_high"
+        },
+        "base_view_2": {
+            "original_key": "video.cam_left_wrist"
+        },
+        "ego_view": {
+            "original_key": "video.cam_right_wrist"
+        }
+    }
+}
