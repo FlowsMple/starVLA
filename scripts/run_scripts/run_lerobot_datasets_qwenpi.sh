@@ -14,11 +14,11 @@ DIT_TYPE="DiT-B"
 # freeze_module_list="qwen_vl_interface.model.model.visual,dino_encoder" # just for fast debug, sota is under fully FT, i.g., freeze_module_list=""
 
 llavadata="asv2_conversation_en,asv2_detailed_description_en"
-oxe_data_root=playground/Datasets/OXE_LEROBOT
-data_mix=bridge_rt_1
+oxe_data_root=playground/Datasets
+data_mix=robotwin_dataset
 
 run_root_dir=./playground/Checkpoints
-run_id=1011_starvla_qwenpi
+run_id=1028_starvla_qwenpi
 
 export action_input_dim=2048
 export WANDB_MODE=disabled
@@ -31,7 +31,7 @@ cp $0 ${output_dir}/
 
 accelerate launch \
   --config_file starVLA/config/deepseeds/deepspeed_zero2.yaml \
-  --num_processes 8 \
+  --num_processes 1 \
   starVLA/training/train_starvla.py \
   --config_yaml ./starVLA/config/training/starvla_cotrain_oxe.yaml \
   --framework.name ${Framework_name} \

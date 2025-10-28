@@ -60,9 +60,9 @@ datasets:
 
   vla_data:
     dataset_py: lerobot_datasets
-    data_root_dir: playground/Datasets/OXE_LEROBOT_DATASET
-    data_mix: bridge_rt_1 # bridge_rt_1
-    action_type: delta_ee
+    data_root_dir: playground/Datasets
+    data_mix: robotwin_data # bridge_rt_1
+    action_type: ee
     CoT_prompt: "Your task is {instruction}. To identify the key objects for your task. Locate their bounding boxes in [x1,y1,x2,y2] format."
     CoT_answer: bbox
     default_image_resolution: [3, 224, 224]

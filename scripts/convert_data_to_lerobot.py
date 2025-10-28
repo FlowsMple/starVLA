@@ -62,17 +62,9 @@ def create_empty_dataset(
             "dtype": "float32",
             "shape": (1,)
         },
-        "action.left_eef_position": {
+        "state.left_joints": {
             "dtype": "float32",
-            "shape": (3,)
-        },
-        "action.left_eef_quaternion": {
-            "dtype": "float32",
-            "shape": (4,)
-        },
-        "action.left_gripper": {
-            "dtype": "float32",
-            "shape": (1,)
+            "shape": (7,)
         },
         "state.right_eef_position": {
             "dtype": "float32",
@@ -88,6 +80,34 @@ def create_empty_dataset(
             "dtype": "float32",
             "shape": (1,)
         },
+        "state.right_joints": {
+            "dtype": "float32",
+            "shape": (7,)
+        },
+        "action.left_eef_position": {
+            "dtype": "float32",
+            "shape": (3,)
+        },
+        "action.left_eef_quaternion": {
+            "dtype": "float32",
+            "shape": (4,)
+        },
+        "action.left_delta_eef_position": {
+            "dtype": "float32",
+            "shape": (3,)
+        },
+        "action.left_delta_eef_quaternion": {
+            "dtype": "float32",
+            "shape": (4,)
+        },
+        "action.left_gripper": {
+            "dtype": "float32",
+            "shape": (1,)
+        },
+        "action.left_joints": {
+            "dtype": "float32",
+            "shape": (7,)
+        },
         "action.right_eef_position": {
             "dtype": "float32",
             "shape": (
@@ -100,11 +120,27 @@ def create_empty_dataset(
                 4,
             )
         },
+        "action.right_delta_eef_position": {
+            "dtype": "float32",
+            "shape": (
+                3,
+            )
+        },
+        "action.right_delta_eef_quaternion": {
+            "dtype": "float32",
+            "shape": (
+                4,
+            )
+        },
         "action.right_gripper": {
             "dtype": "float32",
             "shape": (
                 1,
             )
+        },
+        "action.right_joints": {
+            "dtype": "float32",
+            "shape": (7,)
         },
     }
 
@@ -181,9 +217,11 @@ def load_raw_episode_data(
         torch.Tensor,
 ]:
     with h5py.File(ep_path, "r") as ep:
-        state = torch.from_numpy(ep["/observations/states"][:])
-        action = torch.from_numpy(ep["/action"][:])
-
+        state_joints = torch.from_numpy(ep["/observations/state_qpos"][:])
+        state_eef = torch.from_numpy(ep["/observations/state_eef"][:])
+        action_eef = torch.from_numpy(ep["/action_eef"][:])
+        action_joints = torch.from_numpy(ep["/action_qpos"][:])
+        action_delta_eef = torch.from_numpy(ep["/action_delta_eef"][:])
         imgs_per_cam = load_raw_images_per_camera(
             ep,
             [
@@ -193,7 +231,7 @@ def load_raw_episode_data(
             ],
         )
 
-    return imgs_per_cam, state, action
+    return imgs_per_cam, state_joints,state_eef, action_eef,action_joints,action_delta_eef
 
 
 def populate_dataset(
@@ -208,8 +246,8 @@ def populate_dataset(
     for ep_idx in tqdm.tqdm(episodes):
         ep_path = hdf5_files[ep_idx]
 
-        imgs_per_cam, state, action = load_raw_episode_data(ep_path)
-        num_frames = state.shape[0]
+        imgs_per_cam, state_joints,state_eef, action_eef,action_joints,action_delta_eef = load_raw_episode_data(ep_path)
+        num_frames = state_joints.shape[0]
         # add prompt
         dir_path = os.path.dirname(ep_path)
         json_Path = f"{dir_path}/instructions.json"
@@ -220,18 +258,33 @@ def populate_dataset(
             instruction = np.random.choice(instructions)
         for i in range(num_frames):
             frame = {
-                "state.left_eef_position": state[i][:3],
-                "state.left_eef_quaternion": state[i][3:7],
-                "state.left_gripper": state[i][7:8],
-                "state.right_eef_position": state[i][8:11],
-                "state.right_eef_quaternion": state[i][11:15],
-                "state.right_gripper": state[i][15:16],
-                "action.left_eef_position": action[i][:3],
-                "action.left_eef_quaternion": action[i][3:7],
-                "action.left_gripper": action[i][7:8],
-                "action.right_eef_position": action[i][8:11],
-                "action.right_eef_quaternion": action[i][11:15],
-                "action.right_gripper": action[i][15:16],
+                "state.left_eef_position": state_eef[i][:3],
+                "state.left_eef_quaternion": state_eef[i][3:7],
+                "state.left_gripper": state_eef[i][7:8],
+
+                "state.right_eef_position": state_eef[i][8:11],
+                "state.right_eef_quaternion": state_eef[i][11:15],
+                "state.right_gripper": state_eef[i][15:16],
+
+                "state.left_joints": state_joints[i][:7],
+                "state.right_joints": state_joints[i][7:14],
+
+                "action.left_eef_position": action_eef[i][:3],
+                "action.left_eef_quaternion": action_eef[i][3:7],
+                "action.left_gripper": action_eef[i][7:8],
+
+                "action.right_eef_position": action_eef[i][8:11],
+                "action.right_eef_quaternion": action_eef[i][11:15],
+                "action.right_gripper": action_eef[i][15:16],
+
+                "action.left_joints": action_joints[i][:7],
+                "action.right_joints": action_joints[i][7:14],
+
+                "action.left_delta_eef_position": action_delta_eef[i][:3],
+                "action.left_delta_eef_quaternion": action_delta_eef[i][3:7],
+
+                "action.right_delta_eef_position": action_delta_eef[i][7:10],
+                "action.right_delta_eef_quaternion": action_delta_eef[i][10:14],
                 "task": instruction,
             }
 

@@ -1,41 +1,71 @@
 {
     "action": {
-        "left_eef_xyz": {
+        "left_eef_position": {
             "start": 0,
             "end": 3,
-            "original_key": "action.left_eef_xyz"
+            "original_key": "action.left_eef_position"
         },
         "left_eef_quaternion": {
             "start": 0,
             "end": 4,
             "original_key": "action.left_eef_quaternion"
         },
+        "left_delta_eef_position": {
+            "start": 0,
+            "end": 3,
+            "original_key": "action.left_delta_eef_position"
+        },
+        "left_delta_eef_quaternion": {
+            "start": 0,
+            "end": 4,
+            "original_key": "action.left_delta_eef_quaternion"
+        },
         "left_gripper": {
             "start": 0,
             "end": 1,
             "original_key": "action.left_gripper"
         },
-        "right_eef_xyz": {
+        "left_joints": {
+            "start": 0,
+            "end": 7,
+            "original_key": "action.left_joints"
+        },
+        "right_eef_position": {
             "start": 0,
             "end": 3,
-            "original_key": "action.right_eef_xyz"
+            "original_key": "action.right_eef_position"
         },
         "right_eef_quaternion": {
             "start": 0,
             "end": 4,
             "original_key": "action.right_eef_quaternion"
         },
+        "right_delta_eef_position": {
+            "start": 0,
+            "end": 3,
+            "original_key": "action.right_delta_eef_position"
+        },
+        "right_delta_eef_quaternion": {
+            "start": 0,
+            "end": 4,
+            "original_key": "action.right_delta_eef_quaternion"
+        },
         "right_gripper": {
             "start": 0,
             "end": 1,
             "original_key": "action.right_gripper"
+        },
+        "right_joints": {
+            "start": 0,
+            "end": 7,
+            "original_key": "action.right_joints"
         }
     },
     "state": {
-        "left_eef_xyz": {
+        "left_eef_position": {
             "start": 0,
             "end": 3,
-            "original_key": "state.left_eef_xyz"
+            "original_key": "state.left_eef_position"
         },
         "left_eef_quaternion": {
             "start": 0,
@@ -47,10 +77,15 @@
             "end": 1,
             "original_key": "state.left_gripper"
         },
-        "right_eef_xyz": {
+        "left_joints": {
+            "start": 0,
+            "end": 7,
+            "original_key": "state.left_joints"
+        },
+        "right_eef_position": {
             "start": 0,
             "end": 3,
-            "original_key": "state.right_eef_xyz"
+            "original_key": "state.right_eef_position"
         },
         "right_eef_quaternion": {
             "start": 0,
@@ -61,6 +96,11 @@
             "start": 0,
             "end": 1,
             "original_key": "state.right_gripper"
+        },
+        "right_joints": {
+            "start": 0,
+            "end": 7,
+            "original_key": "state.right_joints"
         }
     },
     "video": {
@@ -73,5 +113,11 @@
         "ego_view": {
             "original_key": "video.cam_right_wrist"
         }
+    },
+    "annotation": {
+        "human.action.task_description": {
+            "original_key": "task_index"
+        },
+        "human.validity": {}
     }
 }

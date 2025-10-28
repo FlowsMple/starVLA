@@ -7,7 +7,23 @@ import pickle
 import cv2
 import argparse
 import yaml, json
+from scipy.spatial.transform import Rotation
 
+import transforms3d as t3d
+
+def compute_endpose_deltas(eef_endpose):
+    traj_len = len(eef_endpose)
+    delta_eef_endpose = np.zeros_like(eef_endpose)
+    delta_eef_endpose[1:, :3] = eef_endpose[1:, :3] - eef_endpose[:-1, :3]
+    delta_eef_endpose[0, 3:] = [1.0, 0.0, 0.0, 0.0]
+    
+    for i in range(1, traj_len):
+        current_quat = eef_endpose[i, 3:]
+        prev_quat = eef_endpose[i-1, 3:]
+        prev_conj = t3d.quaternions.qconjugate(prev_quat)
+        delta_eef_endpose[i, 3:] = t3d.quaternions.qmult(prev_conj, current_quat)
+    
+    return delta_eef_endpose
 
 def load_hdf5(dataset_path):
     if not os.path.isfile(dataset_path):
@@ -15,19 +31,22 @@ def load_hdf5(dataset_path):
         exit()
 
     with h5py.File(dataset_path, "r") as root:
-        left_gripper, left_arm = (
-            root["/joint_action/left_gripper"][()],
+        left_gripper, left_endpose, left_arm = (
+            root["/endpose/left_gripper"][()],
+            root["/endpose/left_endpose"][()],
             root["/joint_action/left_arm"][()],
         )
-        right_gripper, right_arm = (
-            root["/joint_action/right_gripper"][()],
+        right_gripper, right_endpose, right_arm = (
+            root["/endpose/right_gripper"][()],
+            root["/endpose/right_endpose"][()],
             root["/joint_action/right_arm"][()],
         )
         image_dict = dict()
         for cam_name in root[f"/observation/"].keys():
             image_dict[cam_name] = root[f"/observation/{cam_name}/rgb"][()]
-
-    return left_gripper, left_arm, right_gripper, right_arm, image_dict
+    left_delta_endpose = compute_endpose_deltas(left_endpose)
+    right_delta_endpose = compute_endpose_deltas(right_endpose)
+    return left_gripper, left_endpose, left_delta_endpose, left_arm, right_gripper, right_endpose, right_delta_endpose, right_arm, image_dict
 
 
 def images_encoding(imgs):
@@ -49,7 +68,6 @@ def get_task_config(task_name):
     with open(f"./task_config/{task_name}.yml", "r", encoding="utf-8") as f:
         args = yaml.load(f.read(), Loader=yaml.FullLoader)
     return args
-
 
 def data_transform(path, episode_num, save_path):
     begin = 0
@@ -76,33 +94,38 @@ def data_transform(path, episode_num, save_path):
         ) as f:
             json.dump(save_instructions_json, f, indent=2)
 
-        left_gripper_all, left_arm_all, right_gripper_all, right_arm_all, image_dict = (load_hdf5(
+        left_gripper_all, left_endpose_all,left_delta_endpose_all,left_arm_all, right_gripper_all, right_endpose_all,right_delta_endpose_all,right_arm_all, image_dict = (load_hdf5(
             os.path.join(path, "data", f"episode{i}.hdf5")))
-        qpos = []
-        actions = []
+        state_eef = []
+        state_qpos = []
+        action_eef = []
+        action_qpos = []
+        action_delta_eef = []
         cam_high = []
         cam_right_wrist = []
         cam_left_wrist = []
-        left_arm_dim = []
-        right_arm_dim = []
 
         last_state = None
-        for j in range(0, left_gripper_all.shape[0]):
-
-            left_gripper, left_arm, right_gripper, right_arm = (
+        for j in range(0, left_endpose_all.shape[0]):
+            left_gripper, left_endpose, left_delta_endpose, left_arm, right_gripper, right_endpose, right_delta_endpose, right_arm = (
                 left_gripper_all[j],
+                left_endpose_all[j],
+                left_delta_endpose_all[j],
                 left_arm_all[j],
                 right_gripper_all[j],
-                right_arm_all[j],
+                right_endpose_all[j],
+                right_delta_endpose_all[j],
+                right_arm_all[j]
             )
-
-            state = np.array(left_arm.tolist() + [left_gripper] + right_arm.tolist() + [right_gripper])  # joints angle
-
-            state = state.astype(np.float32)
-
+            endpose = np.array(left_endpose.tolist() + [left_gripper] + right_endpose.tolist() + [right_gripper])  # joints angle
+            qpos = np.array(left_arm.tolist() + [left_gripper] + right_arm.tolist() + [right_gripper])  # joints angle
+            delta_endpose = np.array(left_delta_endpose.tolist() + right_delta_endpose.tolist())
+            endpose = endpose.astype(np.float32)
+            qpos = qpos.astype(np.float32)
+            delta_endpose = delta_endpose.astype(np.float32)
             if j != left_gripper_all.shape[0] - 1:
-                qpos.append(state)
-
+                state_eef.append(endpose)
+                state_qpos.append(qpos)
                 camera_high_bits = image_dict["head_camera"][j]
                 camera_high = cv2.imdecode(np.frombuffer(camera_high_bits, np.uint8), cv2.IMREAD_COLOR)
                 camera_high_resized = cv2.resize(camera_high, (640, 480))
@@ -119,19 +142,19 @@ def data_transform(path, episode_num, save_path):
                 cam_left_wrist.append(camera_left_wrist_resized)
 
             if j != 0:
-                action = state
-                actions.append(action)
-                left_arm_dim.append(left_arm.shape[0])
-                right_arm_dim.append(right_arm.shape[0])
+                action_qpos.append(qpos)
+                action_eef.append(endpose)
+                action_delta_eef.append(delta_endpose)
 
         hdf5path = os.path.join(save_path, f"episode_{i}/episode_{i}.hdf5")
 
         with h5py.File(hdf5path, "w") as f:
-            f.create_dataset("action", data=np.array(actions))
             obs = f.create_group("observations")
-            obs.create_dataset("qpos", data=np.array(qpos))
-            obs.create_dataset("left_arm_dim", data=np.array(left_arm_dim))
-            obs.create_dataset("right_arm_dim", data=np.array(right_arm_dim))
+            obs.create_dataset("state_eef", data=np.array(state_eef))
+            obs.create_dataset("state_qpos", data=np.array(state_qpos))
+            f.create_dataset("action_qpos", data=np.array(action_qpos))
+            f.create_dataset("action_eef", data=np.array(action_eef))
+            f.create_dataset("action_delta_eef",data=np.array(action_delta_eef))
             image = obs.create_group("images")
             cam_high_enc, len_high = images_encoding(cam_high)
             cam_right_wrist_enc, len_right = images_encoding(cam_right_wrist)

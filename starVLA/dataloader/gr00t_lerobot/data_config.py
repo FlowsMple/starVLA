@@ -389,7 +389,6 @@ class SingleFrankaRobotiqDeltaEefDataConfig:
         "action.gripper_close",
     ]
 
-    language_keys = ["annotation.human.action.task_description"]
     observation_indices = [0]
     action_indices = list(range(16))
 
@@ -589,27 +588,21 @@ class SingleFrankaRobotiqDeltaJointsDataConfig:
 
         return ComposedModalityTransform(transforms=transforms)
 
-class DualFrankaRobotiqEefDataConfig:
+class SingleAlohaRobotiqEefDataConfig:
     video_keys = [
         "video.cam_high",
         "video.cam_left_wrist",
         "video.cam_right_wrist"
     ]
     state_keys = [
-        "state.left_eef_xyz",
-        "state.left_eef_quaternion",
-        "state.left_gripper",
-        "state.right_eef_xyz",
-        "state.right_eef_quaternion",
-        "state.right_gripper",
+        "state.eef_position",
+        "state.eef_quaternion",
+        "state.gripper",
     ]
     action_keys = [
-        "action.left_eef_xyz",
-        "action.left_eef_quaternion",
-        "action.left_gripper",
-        "action.right_eef_xyz",
-        "action.right_eef_quaternion",
-        "action.right_gripper",
+        "action.eef_position",
+        "action.eef_quaternion",
+        "action.gripper",
     ]
 
     language_keys = ["annotation.human.action.task_description"]
@@ -647,12 +640,9 @@ class DualFrankaRobotiqEefDataConfig:
             StateActionTransform(
                 apply_to=self.state_keys,
                 normalization_modes={
-                    "state.left_eef_xyz": "q99",
-                    "state.left_eef_quaternion": "q99",
-                    "state.left_gripper": "q99",
-                    "state.right_eef_xyz": "q99",
-                    "state.right_eef_quaternion": "q99",
-                    "state.right_gripper": "q99",
+                    "state.eef_position": "q99",
+                    "state.eef_quaternion": "q99",
+                    "state.gripper": "q99",
                 },
             ),
             # action transforms
@@ -660,12 +650,9 @@ class DualFrankaRobotiqEefDataConfig:
             StateActionTransform(
                 apply_to=self.action_keys,
                 normalization_modes={
-                    "action.left_eef_xyz": "q99",
-                    "action.left_eef_quaternion": "q99",
-                    "action.left_gripper": "q99",
-                    "action.right_eef_xyz": "q99",
-                    "action.right_eef_quaternion": "q99",
-                    "action.right_gripper": "q99",
+                    "action.eef_position": "q99",
+                    "action.eef_quaternion": "q99",
+                    "action.gripper": "q99",
                 },
             ),
         ]
@@ -683,6 +670,6 @@ ROBOT_TYPE_CONFIG_MAP = {
     "oxe_bridge": OxeBridgeDataConfig(),
     "oxe_rt1": OxeRT1DataConfig(),
     "demo_sim_franka_delta_joints": SingleFrankaRobotiqDeltaJointsDataConfig(),
-    "demo_sim_dual_franka_eef": DualFrankaRobotiqEefDataConfig(),
+    "demo_sim_single_aloha_eef": SingleAlohaRobotiqEefDataConfig(),
     "custom_robot_config": SingleFrankaRobotiqDeltaEefDataConfig()
 }
